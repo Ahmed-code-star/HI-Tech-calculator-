@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة لفات الورق والاستيكرات</title>
+    <!-- Tailwind CSS CDN for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Import Inter font for a clean, modern look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+
+        /* Base styles for HTML and Body
+           Ensure full viewport height and flexible column layout */
+        html, body {
+            height: 100%; /* Take full viewport height */
+            width: 100%; /* Take full viewport width */
+            margin: 0;
+            padding: 0;
+            font-family: "Inter", sans-serif;
+            color: #2d3748; /* Darker, sophisticated text color */
+            background-color: #f7fafc; /* Very light background for a clean base */
+            /* Subtle background pattern for texture */
+            background-image: radial-gradient(#edf2f7 1px, transparent 1px);
+            background-size: 20px 20px;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            display: flex; /* Use flexbox for vertical stacking */
+            flex-direction: column; /* Stack content and footer */
+            align-items: center; /* Center content horizontally */
+        }
+
+        /* Main content wrapper - now fills available space and acts as a container for sections */
+        .main-content-wrapper {
+            flex-grow: 1; /* Allows content to take available vertical space */
+            width: 100%; /* Take full width of its parent (body) */
+            padding: 1.5rem; /* Consistent padding around the main content area */
+            box-sizing: border-box;
+            display: flex; /* Use flexbox to manage inner sections */
+            flex-direction: column;
+            justify-content: center; /* Center content vertically within available space */
+            align-items: center; /* Center content horizontally */
+            position: relative; /* Crucial for absolute positioning of sections for transitions */
+            /* Removed max-width here to allow full screen filling */
+            overflow-y: hidden; /* Hide overflow on main wrapper, let app-section handle its own scroll */
+        }
+
+        /* Styling for individual calculator sections (cards) and home section.
+           These sections will absolutely fill their parent (.main-content-wrapper)
+           and contain their own scrolling if content overflows. */
+        .app-section {
+            width: calc(100% - 3rem); /* Full width minus parent padding (1.5rem * 2) */
+            height: calc(100% - 3rem); /* Full height minus parent padding (1.5rem * 2) */
+            background-color: #ffffff; /* Pure white background for cards */
+            border-radius: 1.75rem; /* More rounded corners for softness */
+            /* Enhanced, softer shadow for depth */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 2.5rem; /* Increased padding inside cards */
+            text-align: right; /* Align text to right for RTL */
+            transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out; /* Smooth visibility effect */
+            opacity: 1;
+            visibility: visible;
+            position: absolute; /* Position sections absolutely to overlap and fill parent */
+            top: 1.5rem; /* Align to top padding of main-content-wrapper */
+            left: 1.5rem; /* Align to left padding of main-content-wrapper */
+            right: 1.5rem; /* Align to right padding of main-content-wrapper */
+            bottom: 1.5rem; /* Align to bottom padding of main-content-wrapper */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Align content to top */
+            overflow-y: auto; /* Enable scrolling for content if needed */
+            max-width: 1200px; /* Optional: A global max-width for the content card itself for very large screens to prevent stretching too wide */
+        }
+
+        .app-section.hidden-section {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none; /* Disable interaction when hidden */
+        }
+
+        /* Home Section specific styling to ensure it's centered and visually appealing */
+        #home-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 4rem 2rem; /* Adjusted padding for home section */
+            height: 100%; /* Ensure home section also fills its parent */
+        }
+
+        .hi-tech-title {
+            font-size: 4.5rem; /* Large font size for Hi Tech */
+            font-weight: 800; /* Extra bold */
+            margin-bottom: 2.5rem;
+            /* Changed to blue gradient */
+            background: linear-gradient(45deg, #3b82f6, #2563eb, #1e40af); /* Blue gradient */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); /* Soft blue shadow */
+            letter-spacing: 0.05em; /* Slight letter spacing */
+            transition: all 0.5s ease;
+        }
+        .hi-tech-title:hover {
+            transform: scale(1.02);
+            text-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+        }
+
+        .nav-buttons-container {
+            display: grid;
+            grid-template-columns: 1fr; /* Single column on small screens */
+            gap: 1.5rem; /* Space between buttons */
+            width: 100%;
+            max-width: 400px; /* Max width for navigation buttons for readability */
+        }
+        @media (min-width: 640px) {
+            .nav-buttons-container {
+                grid-template-columns: repeat(2, 1fr); /* Two columns on larger screens */
+            }
+        }
+
+        .nav-button {
+            background: linear-gradient(145deg, #60a5fa, #3b82f6); /* Blue gradient */
+            color: white;
+            padding: 1.2rem 2rem;
+            border-radius: 1rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+        .nav-button:hover {
+            background: linear-gradient(145deg, #3b82f6, #60a5fa); /* Reverse gradient on hover */
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        .nav-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(59, 130, 246, 0.2), inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .nav-button svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Title styling for each calculator section */
+        .section-title-calc {
+            color: #2d3748; /* Darker text for prominent titles */
+            font-size: 2.1rem; /* Larger font size for titles */
+            font-weight: 700; /* Bolder titles */
+            margin-bottom: 2rem; /* More space below title */
+            display: flex;
+            align-items: center;
+            justify-content: flex-end; /* Align title to the right for RTL */
+            border-bottom: 2px solid #e2e8f0; /* Subtle separator */
+            padding-bottom: 1rem; /* Padding for the separator */
+        }
+        .section-title-calc svg {
+            margin-right: 1rem; /* Space between text and icon for RTL */
+            margin-left: 0;
+            color: #20c997; /* Elegant teal accent color for icons */
+            width: 32px; /* Larger icons */
+            height: 32px;
+        }
+
+        /* Input group spacing */
+        .input-group {
+            margin-bottom: 1.5rem; /* Increased spacing between input groups */
+        }
+
+        /* Input label styling */
+        .input-label {
+            display: block;
+            font-weight: 600;
+            color: #4a5568; /* Medium gray for labels */
+            margin-bottom: 0.8rem; /* More space below label */
+            font-size: 1.05rem; /* Slightly larger label font */
+        }
+
+        /* Input field styling */
+        .input-field {
+            width: 100%;
+            padding: 1rem 1.4rem; /* More padding for a comfortable feel */
+            border: 1px solid #cbd5e0; /* Light gray border */
+            border-radius: 0.85rem; /* Slightly more rounded */
+            font-size: 1.15rem; /* Larger input text */
+            color: #2d3748; /* Dark text in input */
+            background-color: #f8f9fa; /* Very light background for inputs */
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
+            text-align: right; /* Align input text to the right for RTL */
+            -webkit-appearance: none; /* Remove default browser styling for numbers */
+            -moz-appearance: textfield;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #20c997; /* Teal border on focus */
+            box-shadow: 0 0 0 4px rgba(32, 201, 151, 0.25); /* Soft teal shadow on focus */
+            background-color: #ffffff; /* White background on focus */
+        }
+        /* Style for invalid input */
+        .input-field.input-invalid {
+            border-color: #ef4444; /* Red border for invalid input */
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.25); /* Red shadow */
+        }
+        /* Hide number input arrows for a cleaner look */
+        .input-field::-webkit-outer-spin-button,
+        .input-field::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Result display styling */
+        .result-display {
+            font-size: 1.8rem; /* Larger result font */
+            font-weight: 700;
+            color: #047857; /* Deeper green for results */
+            margin-top: 2rem; /* More space above result */
+            text-align: end;
+            background-color: #ecfdf5; /* Light green background for results */
+            padding: 1.2rem 1.5rem; /* More padding */
+            border-radius: 1.25rem; /* More rounded */
+            border: 1px solid #a7f3d0;
+            transition: all 0.3s ease-out; /* Smooth transition for result changes */
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); /* Subtle inner shadow */
+        }
+        .result-display.flash {
+            animation: flashResult 0.5s ease-in-out;
+        }
+        @keyframes flashResult {
+            0% { transform: scale(1); background-color: #ecfdf5; }
+            50% { transform: scale(1.01); background-color: #d1fae5; }
+            100% { transform: scale(1); background-color: #ecfdf5; }
+        }
+
+        /* Suggested prices container */
+        .suggested-prices-container {
+            margin-top: 2rem; /* More space above */
+            padding-top: 1.5rem; /* More padding */
+            border-top: 1px dashed #e2e8f0; /* Subtle dashed border */
+            text-align: center;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem; /* Increased space between buttons */
+        }
+        .suggested-prices-label {
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 1rem; /* More space below label */
+            display: block;
+            width: 100%; /* Ensure label takes full width */
+            font-size: 1.05rem;
+        }
+
+        /* Price button styling with gradients and enhanced effects */
+        .price-button {
+            display: inline-block;
+            background: linear-gradient(145deg, #38b2ac, #20c997); /* Teal gradient */
+            color: white;
+            padding: 0.8rem 1.6rem; /* More padding */
+            border-radius: 0.75rem; /* More rounded */
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(32, 201, 151, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border: none; /* Remove default button border */
+            font-size: 1.05rem;
+            min-width: 80px; /* Ensure consistent button width */
+        }
+        .price-button:hover {
+            background: linear-gradient(145deg, #20c997, #38b2ac); /* Reverse gradient on hover */
+            transform: translateY(-3px); /* More pronounced lift */
+            box-shadow: 0 6px 15px rgba(32, 201, 151, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        .price-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(32, 201, 151, 0.2), inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Reset button styling */
+        .reset-button {
+            background-color: #ef4444; /* Red for reset button */
+            color: white;
+            padding: 0.8rem 1.6rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border: none;
+            margin-top: 2rem; /* More space above */
+            display: block;
+            width: fit-content;
+            margin-left: auto; /* Center for RTL */
+            margin-right: auto; /* Center for RTL */
+            font-size: 1.05rem;
+            min-width: 120px;
+        }
+        .reset-button:hover {
+            background-color: #dc2626;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(239, 68, 68, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        .reset-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(239, 68, 68, 0.1), inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Back to Home button styling */
+        .back-to-home-button {
+            background-color: #6c757d; /* Gray for back button */
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+            border: none;
+            margin-top: 0; /* Remove top margin as it's at the top of the section */
+            margin-bottom: 1.5rem; /* Add bottom margin for spacing */
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: fit-content;
+            margin-right: auto; /* Align to right for RTL */
+            font-size: 0.95rem;
+        }
+        .back-to-home-button:hover {
+            background-color: #5a6268;
+            transform: translateY(-1px);
+        }
+        .back-to-home-button svg {
+            width: 20px;
+            height: 20px;
+            transform: rotate(180deg); /* Rotate arrow for RTL back button */
+        }
+
+        /* Footer Styling - Always visible at the bottom */
+        .app-footer {
+            width: 100%;
+            padding: 1.2rem 1.5rem; /* Adjusted padding */
+            color: #718096; /* Softer gray for footer text */
+            font-size: 0.9rem; /* Slightly smaller font to be subtle */
+            text-align: center;
+            background-color: #edf2f7; /* Light gray background for footer */
+            border-top: 1px solid #e2e8f0;
+            flex-shrink: 0; /* Prevent footer from shrinking */
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.03); /* Subtle shadow at top of footer */
+        }
+
+        /* Responsive adjustments for medium screens and up */
+        @media (min-width: 768px) {
+            .grid-cols-md-2 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content-wrapper">
+        <!-- Home Section -->
+        <div id="home-section" class="app-section">
+            <h1 class="hi-tech-title">Hi Tech</h1>
+            <div class="nav-buttons-container">
+                <button class="nav-button" id="nav-cashier">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-receipt-text">
+                        <path d="M4 2V22C4 22 5 20 7 20C9 20 10 22 12 22C14 22 15 20 17 20C19 20 20 22 20 22V2C20 2 19 4 17 4C15 4 14 2 12 2C10 2 9 4 7 4C5 4 4 2 4 2Z"/><path d="M12 10H16"/><path d="M12 14H16"/><path d="M12 6H16"/>
+                    </svg>
+                    رول كاشير
+                </button>
+                <button class="nav-button" id="nav-fawry">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-printer">
+                        <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>
+                    </svg>
+                    رول ماكينات فوري
+                </button>
+                <button class="nav-button" id="nav-barcode">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-barcode">
+                        <path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/>
+                    </svg>
+                    رول باركود
+                </button>
+                <button class="nav-button" id="nav-big-sticker">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tag">
+                            <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414L12.586 22.414a2 2 0 0 0 2.828 0L22.414 14.586a2 2 0 0 0 0-2.828Z"/><path d="M7 7h.01"/>
+                    </svg>
+                    رول الاستيكر الكبير
+                </button>
+            </div>
+        </div>
+
+        <!-- Cashier Roll Section -->
+        <div id="cashier-section" class="app-section hidden-section">
+            <button class="back-to-home-button" data-back-button>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right">
+                    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                </svg>
+                العودة للرئيسية
+            </button>
+            <h3 class="section-title-calc">
+                رول كاشير
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-receipt-text">
+                    <path d="M4 2V22C4 22 5 20 7 20C9 20 10 22 12 22C14 22 15 20 17 20C19 20 20 22 20 22V2C20 2 19 4 17 4C15 4 14 2 12 2C10 2 9 4 7 4C5 4 4 2 4 2Z"/><path d="M12 10H16"/><path d="M12 14H16"/><path d="M12 6H16"/>
+                </svg>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6"> <!-- Increased gap -->
+                <div class="input-group">
+                    <label for="cashier-meters" class="input-label">عدد الأمتار</label>
+                    <input type="number" class="input-field" id="cashier-meters" value="0" min="0" data-input-field="meters">
+                </div>
+                <div class="input-group">
+                    <label for="cashier-price" class="input-label">السعر للمتر (بالقرش)</label>
+                    <input type="number" class="input-field" id="cashier-price" value="0" min="0" data-input-field="price">
+                </div>
+                <div class="input-group md:col-span-2">
+                    <label for="cashier-rolls" class="input-label">عدد الرول</label>
+                    <input type="number" class="input-field" id="cashier-rolls" value="1" min="1" data-input-field="rolls">
+                </div>
+            </div>
+            <div class="result-display" data-result-field="cashier-result">
+                السعر الإجمالي: <span>٠٫٠٠ جنيه</span>
+            </div>
+            <div class="suggested-prices-container">
+                <span class="suggested-prices-label">أسعار مقترحة (بالقرش):</span>
+                <button class="price-button" data-suggested-price="42">42</button>
+                <button class="price-button" data-suggested-price="43">43</button>
+                <button class="price-button" data-suggested-price="44">44</button>
+            </div>
+            <button class="reset-button" data-reset-button>إعادة تعيين</button>
+        </div>
+
+        <!-- Fawry Roll Section -->
+        <div id="fawry-section" class="app-section hidden-section">
+            <button class="back-to-home-button" data-back-button>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right">
+                    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                </svg>
+                العودة للرئيسية
+            </button>
+            <h3 class="section-title-calc">
+                رول ماكينات فوري
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-printer">
+                    <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>
+                </svg>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="input-group">
+                    <label for="fawry-meters" class="input-label">عدد الأمتار</label>
+                    <input type="number" class="input-field" id="fawry-meters" value="0" min="0" data-input-field="meters">
+                </div>
+                <div class="input-group">
+                    <label for="fawry-price" class="input-label">السعر للمتر (بالقرش)</label>
+                    <input type="number" class="input-field" id="fawry-price" value="0" min="0" data-input-field="price">
+                </div>
+                <div class="input-group md:col-span-2">
+                    <label for="fawry-rolls" class="input-label">عدد الرول</label>
+                    <input type="number" class="input-field" id="fawry-rolls" value="1" min="1" data-input-field="rolls">
+                </div>
+            </div>
+            <div class="result-display" data-result-field="fawry-result">
+                السعر الإجمالي: <span>٠٫٠٠ جنيه</span>
+            </div>
+            <div class="suggested-prices-container">
+                <span class="suggested-prices-label">أسعار مقترحة (بالقرش):</span>
+                <button class="price-button" data-suggested-price="32">32</button>
+                <button class="price-button" data-suggested-price="33">33</button>
+                <button class="price-button" data-suggested-price="34">34</button>
+            </div>
+            <button class="reset-button" data-reset-button>إعادة تعيين</button>
+        </div>
+
+        <!-- Barcode Roll Section -->
+        <div id="barcode-section" class="app-section hidden-section">
+            <button class="back-to-home-button" data-back-button>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right">
+                    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                </svg>
+                العودة للرئيسية
+            </button>
+            <h3 class="section-title-calc">
+                رول باركود
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-barcode">
+                    <path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/>
+                </svg>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="input-group">
+                    <label for="barcode-width" class="input-label">العرض (ملليمتر)</label>
+                    <input type="number" class="input-field" id="barcode-width" value="0" min="0" data-input-field="width">
+                </div>
+                <div class="input-group">
+                    <label for="barcode-length" class="input-label">الطول (ملليمتر)</label>
+                    <input type="number" class="input-field" id="barcode-length" value="0" min="0" data-input-field="length">
+                </div>
+                <div class="input-group">
+                    <label for="barcode-quantity" class="input-label">عدد الاستيكر</label>
+                    <input type="number" class="input-field" id="barcode-quantity" value="0" min="0" data-input-field="quantity">
+                </div>
+                <div class="input-group">
+                    <label for="barcode-price" class="input-label">السعر للمتر المربع (بالجنيه المصري)</label>
+                    <input type="number" class="input-field" id="barcode-price" value="0" min="0" data-input-field="price">
+                </div>
+                <div class="input-group md:col-span-2">
+                    <label for="barcode-rolls" class="input-label">عدد الرول</label>
+                    <input type="number" class="input-field" id="barcode-rolls" value="1" min="1" data-input-field="rolls">
+                </div>
+            </div>
+            <div class="result-display" data-result-field="barcode-result">
+                السعر الإجمالي: <span>٠٫٠٠ جنيه</span>
+            </div>
+            <div class="suggested-prices-container">
+                <span class="suggested-prices-label">أسعار مقترحة (بالجنيه المصري):</span>
+                <button class="price-button" data-suggested-price="23">23</button>
+                <button class="price-button" data-suggested-price="24">24</button>
+                <button class="price-button" data-suggested-price="25">25</button>
+            </div>
+            <button class="reset-button" data-reset-button>إعادة تعيين</button>
+        </div>
+
+        <!-- Big Sticker Roll Section -->
+        <div id="big-sticker-section" class="app-section hidden-section">
+            <button class="back-to-home-button" data-back-button>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right">
+                    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                </svg>
+                العودة للرئيسية
+            </button>
+            <h3 class="section-title-calc">
+                رول الاستيكر الكبير
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tag">
+                        <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414L12.586 22.414a2 2 0 0 0 2.828 0L22.414 14.586a2 2 0 0 0 0-2.828Z"/><path d="M7 7h.01"/>
+                </svg>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="input-group">
+                    <label for="big-sticker-width" class="input-label">العرض (سنتيمتر)</label>
+                    <input type="number" class="input-field" id="big-sticker-width" value="0" min="0" data-input-field="width">
+                </div>
+                <div class="input-group">
+                    <label for="big-sticker-length" class="input-label">الطول (سنتيمتر)</label>
+                    <input type="number" class="input-field" id="big-sticker-length" value="0" min="0" data-input-field="length">
+                </div>
+                <div class="input-group">
+                    <label for="big-sticker-quantity" class="input-label">عدد الاستيكر</label>
+                    <input type="number" class="input-field" id="big-sticker-quantity" value="0" min="0" data-input-field="quantity">
+                </div>
+                <div class="input-group">
+                    <label for="big-sticker-price" class="input-label">السعر للمتر المربع (بالجنيه المصري)</label>
+                    <input type="number" class="input-field" id="big-sticker-price" value="0" min="0" data-input-field="price">
+                </div>
+                <div class="input-group md:col-span-2">
+                    <label for="big-sticker-rolls" class="input-label">عدد الرول</label>
+                    <input type="number" class="input-field" id="big-sticker-rolls" value="1" min="1" data-input-field="rolls">
+                </div>
+            </div>
+            <div class="result-display" data-result-field="big-sticker-result">
+                السعر الإجمالي: <span>٠٫٠٠ جنيه</span>
+            </div>
+            <div class="suggested-prices-container">
+                <span class="suggested-prices-label">أسعار مقترحة (بالجنيه المصري):</span>
+                <button class="price-button" data-suggested-price="23">23</button>
+                <button class="price-button" data-suggested-price="24">24</button>
+                <button class="price-button" data-suggested-price="25">25</button>
+            </div>
+            <button class="reset-button" data-reset-button>إعادة تعيين</button>
+        </div>
+    </div>
+
+    <!-- App Footer - Always visible at the bottom -->
+    <footer class="app-footer">
+        جميع الحقوق محفوظة لمطور البرنامج احمد رشدي
+    </footer>
+
+    <script>
+        /**
+         * Calculator Class for managing individual calculation sections.
+         * Encapsulates logic for inputs, calculations, and result display.
+         */
+        class Calculator {
+            /**
+             * @param {string} sectionId - The ID of the HTML section element.
+             * @param {Function} calculationFn - The specific function to perform the calculation for this section.
+             * @param {Object} defaultValues - An object containing default values for inputs.
+             * @param {Object} inputMap - A map of data-input-field names to their corresponding HTML element IDs.
+             */
+            constructor(sectionId, calculationFn, defaultValues, inputMap) {
+                this.section = document.getElementById(sectionId);
+                this.calculationFn = calculationFn;
+                this.defaultValues = defaultValues;
+                this.inputMap = inputMap;
+                this.localStorageKey = `calculator-${sectionId}-state`; // Unique key for local storage
+
+                this.inputs = {};
+                // Populate the inputs object with references to actual DOM elements
+                for (const key in inputMap) {
+                    this.inputs[key] = this.section.querySelector(`[data-input-field="${key}"]`);
+                }
+                this.resultDisplaySpan = this.section.querySelector('[data-result-field] span');
+                this.resultDisplayContainer = this.section.querySelector('[data-result-field]'); // Get the container for animation
+                this.resetButton = this.section.querySelector('[data-reset-button]');
+
+                this.loadState(); // Load saved state on initialization
+                this.initListeners();
+                this.calculate(); // Perform initial calculation on load
+            }
+
+            /**
+             * Initializes event listeners for all inputs and buttons within the section.
+             * This method sets up the interactivity for the calculator.
+             */
+            initListeners() {
+                // Add 'input' event listeners to all input fields to trigger recalculation and save state
+                for (const key in this.inputs) {
+                    this.inputs[key].addEventListener('input', () => {
+                        this.validateInput(this.inputs[key], key); // Validate input
+                        this.calculate();
+                        this.saveState(); // Save state after each input change
+                    });
+                }
+
+                // Add 'click' listeners to suggested price buttons to update the price input
+                this.section.querySelectorAll('[data-suggested-price]').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const price = parseFloat(event.target.dataset.suggestedPrice);
+                        if (!isNaN(price)) {
+                            // Assuming 'price' is a common key for the price input field
+                            this.inputs.price.value = price;
+                            this.validateInput(this.inputs.price, 'price'); // Validate price input
+                            this.calculate(); // Recalculate after setting the suggested price
+                            this.saveState(); // Save state after setting suggested price
+                        }
+                    });
+                });
+
+                // Add 'click' listener for the reset button to revert inputs to default values
+                this.resetButton.addEventListener('click', () => this.reset());
+            }
+
+            /**
+             * Validates a specific input field based on its type and applies/removes 'input-invalid' class.
+             * @param {HTMLElement} inputElement - The input DOM element to validate.
+             * @param {string} key - The key representing the input type (e.g., 'meters', 'price', 'rolls').
+             */
+            validateInput(inputElement, key) {
+                const value = parseFloat(inputElement.value);
+                let isValid = true;
+
+                if (isNaN(value)) {
+                    isValid = false;
+                } else if (key !== 'rolls' && value < 0) { // Meters, width, length, quantity, price cannot be negative
+                    isValid = false;
+                } else if (key === 'rolls' && value < 1) { // Rolls must be at least 1
+                    isValid = false;
+                }
+
+                if (isValid) {
+                    inputElement.classList.remove('input-invalid');
+                } else {
+                    inputElement.classList.add('input-invalid');
+                }
+            }
+
+            /**
+             * Retrieves current values from input fields, parsing them as floats.
+             * Handles default values if input is empty or invalid, ensuring robust calculations.
+             * @returns {Object} An object containing the parsed input values.
+             */
+            getValues() {
+                const values = {};
+                for (const key in this.inputs) {
+                    let value = parseFloat(this.inputs[key].value);
+                    // If the value is NaN or negative (for non-roll inputs), use the default.
+                    // 'rolls' must be at least 1, others can be 0.
+                    if (isNaN(value) || (key !== 'rolls' && value < 0)) {
+                        value = this.defaultValues[key] || 0; // Default to 0 or specific default
+                        // Do NOT update inputElement.value here, as it would overwrite user's invalid input
+                        // The validation feedback (red border) is enough.
+                    } else if (key === 'rolls' && value < 1) { // Rolls must be at least 1
+                        value = 1;
+                        // Do NOT update inputElement.value here
+                    }
+                    values[key] = value;
+                }
+                return values;
+            }
+
+            /**
+             * Performs the calculation using the provided calculation function and updates the display.
+             * Includes error handling for calculation issues.
+             */
+            calculate() {
+                const values = this.getValues();
+                let total = 0;
+
+                // Check if any input is currently invalid before calculating
+                let anyInvalid = false;
+                for (const key in this.inputs) {
+                    if (this.inputs[key].classList.contains('input-invalid')) {
+                        anyInvalid = true;
+                        break;
+                    }
+                }
+
+                if (anyInvalid) {
+                    this.updateResult('مدخلات غير صحيحة');
+                    return;
+                }
+
+                try {
+                    // Dynamically call the calculation function based on the available input keys
+                    if (this.inputMap.width && this.inputMap.length && this.inputMap.quantity) {
+                        // For barcode and big sticker calculations (require width, length, quantity, price, rolls)
+                        total = this.calculationFn(values.width, values.length, values.quantity, values.price, values.rolls);
+                    } else if (this.inputMap.meters) {
+                        // For cashier and fawry calculations (require meters, price, rolls)
+                        total = this.calculationFn(values.meters, values.price, values.rolls);
+                    } else {
+                        // Fallback or error if calculation function parameters don't match
+                        console.warn('Unknown calculation type for section:', this.section.id);
+                        total = 0;
+                    }
+
+                    if (isNaN(total) || !isFinite(total)) { // Check for NaN and Infinity
+                        this.updateResult('خطأ في الحساب');
+                    } else {
+                        this.updateResult(formatNumber(total) + ' جنيه');
+                    }
+                } catch (error) {
+                    console.error("Calculation error for section " + this.section.id + ":", error);
+                    this.updateResult('خطأ في الإدخال'); // Generic error message for the user
+                }
+            }
+
+            /**
+             * Updates the result display with the given text and applies a flash animation.
+             * The animation provides visual feedback to the user that the result has changed.
+             * @param {string} text - The text to display as the result.
+             */
+            updateResult(text) {
+                this.resultDisplaySpan.textContent = text;
+                // Remove and re-add the 'flash' class to restart the animation
+                this.resultDisplayContainer.classList.remove('flash');
+                // Trigger reflow to ensure the animation restarts
+                void this.resultDisplayContainer.offsetWidth;
+                this.resultDisplayContainer.classList.add('flash');
+            }
+
+            /**
+             * Resets all input fields in the section to their default values and clears local storage.
+             * After resetting, it triggers a recalculation to update the displayed result.
+             */
+            reset() {
+                for (const key in this.inputs) {
+                    this.inputs[key].value = this.defaultValues[key];
+                    this.inputs[key].classList.remove('input-invalid'); // Remove invalid class on reset
+                }
+                localStorage.removeItem(this.localStorageKey); // Clear state from local storage
+                this.calculate(); // Recalculate after reset to show default result
+            }
+
+            /**
+             * Saves the current state of input values to local storage.
+             */
+            saveState() {
+                const state = {};
+                for (const key in this.inputs) {
+                    state[key] = this.inputs[key].value;
+                }
+                try {
+                    localStorage.setItem(this.localStorageKey, JSON.stringify(state));
+                } catch (e) {
+                    console.error("Error saving to local storage:", e);
+                }
+            }
+
+            /**
+             * Loads the saved state of input values from local storage.
+             */
+            loadState() {
+                try {
+                    const savedState = localStorage.getItem(this.localStorageKey);
+                    if (savedState) {
+                        const state = JSON.parse(savedState);
+                        for (const key in state) {
+                            if (this.inputs[key]) {
+                                this.inputs[key].value = state[key];
+                                this.validateInput(this.inputs[key], key); // Validate loaded input
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error loading from local storage:", e);
+                    localStorage.removeItem(this.localStorageKey); // Clear corrupted data
+                }
+            }
+        }
+
+        /**
+         * Formats a number to Egyptian Arabic locale with 2 decimal places.
+         * This ensures currency display is consistent and culturally appropriate.
+         * @param {number} num - The number to format.
+         * @returns {string} The formatted number string.
+         */
+        function formatNumber(num) {
+            return num.toLocaleString('ar-EG', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        /**
+         * Specific calculation logic for Cashier rolls.
+         * Price input is in Qirsh, converted to EGP for calculation and display.
+         * @param {number} meters - Number of meters.
+         * @param {number} priceInQirsh - Price per meter in Qirsh.
+         * @param {number} rolls - Number of rolls.
+         * @returns {number} The calculated total in EGP (جنيه).
+         */
+        function calculateCashierRoll(meters, priceInQirsh, rolls) {
+            const priceInEGP = priceInQirsh / 100; // Convert Qirsh to EGP
+            return meters * priceInEGP * rolls;
+        }
+
+        /**
+         * Specific calculation logic for Fawry machine rolls.
+         * Price input is in Qirsh, converted to EGP for calculation and display.
+         * @param {number} meters - Number of meters.
+         * @param {number} priceInQirsh - Price per meter in Qirsh.
+         * @param {number} rolls - Number of rolls.
+         * @returns {number} The calculated total in EGP (جنيه).
+         */
+        function calculateFawryRoll(meters, priceInQirsh, rolls) {
+            const priceInEGP = priceInQirsh / 100; // Convert Qirsh to EGP
+            return meters * priceInEGP * rolls;
+        }
+
+        /**
+         * Specific calculation logic for Barcode rolls.
+         * Price is assumed to be per square meter (EGP/m²).
+         * Includes an adjustment of +3mm to both width and length for calculation,
+         * as per common industry practices for cutting margins.
+         * @param {number} widthMm - Width in millimeters.
+         * @param {number} lengthMm - Length in millimeters.
+         * @param {number} quantity - Number of stickers.
+         * @param {number} pricePerSqMeterEGP - Price per square meter in EGP.
+         * @param {number} rolls - Number of rolls.
+         * @returns {number} The calculated total in EGP (جنيه).
+         */
+        function calculateBarcodeRoll(widthMm, lengthMm, quantity, pricePerSqMeterEGP, rolls) {
+            // Add 3mm to both length and width for production tolerance/cutting
+            const adjustedWidthM = (widthMm + 3) / 1000; // Convert to meters
+            const adjustedLengthM = (lengthMm + 3) / 1000; // Convert to meters
+
+            const areaPerStickerSqM = adjustedWidthM * adjustedLengthM;
+            return areaPerStickerSqM * quantity * pricePerSqMeterEGP * rolls;
+        }
+
+        /**
+         * Specific calculation logic for Big Sticker rolls.
+         * Price is assumed to be per square meter (EGP/m²).
+         * Includes an adjustment of +1cm to width and +0.3cm to length for calculation,
+         * reflecting larger cutting margins for bigger stickers.
+         * @param {number} widthCm - Width in centimeters.
+         * @param {number} lengthCm - Length in centimeters.
+         * @param {number} quantity - Number of stickers.
+         * @param {number} pricePerSqMeterEGP - Price per square meter in EGP.
+         * @param {number} rolls - Number of rolls.
+         * @returns {number} The calculated total in EGP (جنيه).
+         */
+        function calculateBigStickerRoll(widthCm, lengthCm, quantity, pricePerSqMeterEGP, rolls) {
+            // Add 1cm to width and 0.3cm to length for production tolerance/cutting
+            const adjustedWidthM = (widthCm + 1) / 100; // Convert to meters
+            const adjustedLengthM = (lengthCm + 0.3) / 100; // Convert to meters
+
+            const areaPerStickerSqM = adjustedWidthM * adjustedLengthM;
+            return areaPerStickerSqM * quantity * pricePerSqMeterEGP * rolls;
+        }
+
+        // Global variable to keep track of the currently active section
+        let currentActiveSectionId = 'home-section';
+
+        /**
+         * Navigates to a specified section, hiding the current active section and showing the new one.
+         * Uses CSS opacity and visibility transitions for a smooth effect.
+         * @param {string} targetSectionId - The ID of the section to navigate to.
+         */
+        function navigateTo(targetSectionId) {
+            const currentSection = document.getElementById(currentActiveSectionId);
+            const targetSection = document.getElementById(targetSectionId);
+
+            if (currentSection && targetSection) {
+                // Start hiding the current section
+                currentSection.classList.add('hidden-section');
+
+                // After the fade-out transition, make it truly invisible and remove active class
+                setTimeout(() => {
+                    currentSection.classList.remove('active-section'); // Remove active class after transition
+                    // Show the target section
+                    targetSection.classList.remove('hidden-section');
+                    targetSection.classList.add('active-section');
+                    // Scroll to the top of the new section if it's a calculator section
+                    if (targetSectionId !== 'home-section') {
+                        targetSection.scrollTop = 0;
+                    }
+                }, 500); // This delay should match the CSS transition duration for opacity
+
+                // Update the global active section ID
+                currentActiveSectionId = targetSectionId;
+            } else {
+                console.error(`Section with ID ${targetSectionId} or ${currentActiveSectionId} not found.`);
+            }
+        }
+
+        // Initialize all calculators and set up navigation when the DOM is fully loaded.
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Calculator instances for each section
+            new Calculator(
+                'cashier-section',
+                calculateCashierRoll,
+                { meters: 0, price: 0, rolls: 1 },
+                { meters: 'cashier-meters', price: 'cashier-price', rolls: 'cashier-rolls' }
+            );
+
+            new Calculator(
+                'fawry-section',
+                calculateFawryRoll,
+                { meters: 0, price: 0, rolls: 1 },
+                { meters: 'fawry-meters', price: 'fawry-price', rolls: 'fawry-rolls' }
+            );
+
+            new Calculator(
+                'barcode-section',
+                calculateBarcodeRoll,
+                { width: 0, length: 0, quantity: 0, price: 0, rolls: 1 },
+                { width: 'barcode-width', length: 'barcode-length', quantity: 'barcode-quantity', price: 'barcode-price', rolls: 'barcode-rolls' }
+            );
+
+            new Calculator(
+                'big-sticker-section',
+                calculateBigStickerRoll,
+                { width: 0, length: 0, quantity: 0, price: 0, rolls: 1 },
+                { width: 'big-sticker-width', length: 'big-sticker-length', quantity: 'big-sticker-quantity', price: 'big-sticker-price', rolls: 'big-sticker-rolls' }
+            );
+
+            // Set up navigation buttons from the home page
+            document.getElementById('nav-cashier').addEventListener('click', () => navigateTo('cashier-section'));
+            document.getElementById('nav-fawry').addEventListener('click', () => navigateTo('fawry-section'));
+            document.getElementById('nav-barcode').addEventListener('click', () => navigateTo('barcode-section'));
+            document.getElementById('nav-big-sticker').addEventListener('click', () => navigateTo('big-sticker-section'));
+
+            // Set up "Back to Home" buttons within each calculator section
+            document.querySelectorAll('[data-back-button]').forEach(button => {
+                button.addEventListener('click', () => navigateTo('home-section'));
+            });
+
+            // Initially hide all calculator sections and show the home section
+            document.querySelectorAll('.app-section').forEach(section => {
+                if (section.id !== 'home-section') {
+                    section.classList.add('hidden-section');
+                } else {
+                    section.classList.add('active-section'); // Ensure home section is active on load
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
